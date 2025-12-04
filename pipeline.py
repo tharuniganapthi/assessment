@@ -5,6 +5,7 @@ import google.generativeai as genai
 import json
 import time
 
+
 API_KEY = "AIzaSyABWMNlpsZF5JczXChb-PqafT0ZH5TQQW8"
 
 PDF_FOLDER = "./contracts"
@@ -16,14 +17,19 @@ def get_working_model():
     """Automatically finds a model that works for your account."""
     print("Searching for available Gemini models...")
     try:
+
         for m in genai.list_models():
             if 'generateContent' in m.supported_generation_methods:
                 print(f"Found working model: {m.name}")
+               
                 return genai.GenerativeModel(m.name)
     except Exception as e:
         print(f"Error listing models: {e}")
+    
+
     print("Could not auto-detect. Defaulting to 'gemini-1.5-flash'.")
     return genai.GenerativeModel('gemini-1.5-flash')
+
 
 model = get_working_model()
 
@@ -42,7 +48,7 @@ def extract_text_from_pdf(pdf_path):
 
 def analyze_contract_with_llm(text):
     """Sends text to Gemini to extract clauses and summary."""
-    # Truncate text to be safe
+    
     truncated_text = text[:80000] 
     
     prompt = f"""
@@ -70,6 +76,7 @@ def analyze_contract_with_llm(text):
 
     try:
         response = model.generate_content(prompt)
+        
         clean_text = response.text.replace("```json", "").replace("```", "").strip()
         return json.loads(clean_text)
     except Exception as e:
@@ -104,6 +111,7 @@ def main():
                     "liability_clause": data.get("liability_clause", "")
                 }
                 results.append(row)
+            
             time.sleep(4)
 
     if results:
