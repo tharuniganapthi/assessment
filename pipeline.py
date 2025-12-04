@@ -5,34 +5,26 @@ import google.generativeai as genai
 import json
 import time
 
-# --- CONFIGURATION ---
-# PASTE YOUR GOOGLE GEMINI API KEY HERE (Keep the quotes!)
 API_KEY = "AIzaSyABWMNlpsZF5JczXChb-PqafT0ZH5TQQW8"
 
 PDF_FOLDER = "./contracts"
 OUTPUT_FILE = "contract_analysis_output.csv"
 
-# Configure Google Gemini
 genai.configure(api_key=API_KEY)
 
 def get_working_model():
     """Automatically finds a model that works for your account."""
     print("Searching for available Gemini models...")
     try:
-        # List all models available to your API key
         for m in genai.list_models():
             if 'generateContent' in m.supported_generation_methods:
                 print(f"Found working model: {m.name}")
-                # Return the first model that supports text generation
                 return genai.GenerativeModel(m.name)
     except Exception as e:
         print(f"Error listing models: {e}")
-    
-    # Fallback if search fails
     print("Could not auto-detect. Defaulting to 'gemini-1.5-flash'.")
     return genai.GenerativeModel('gemini-1.5-flash')
 
-# Initialize the model using the auto-finder
 model = get_working_model()
 
 def extract_text_from_pdf(pdf_path):
@@ -78,7 +70,6 @@ def analyze_contract_with_llm(text):
 
     try:
         response = model.generate_content(prompt)
-        # Clean the response to ensure valid JSON (removes ```json ... ``` wrappers)
         clean_text = response.text.replace("```json", "").replace("```", "").strip()
         return json.loads(clean_text)
     except Exception as e:
@@ -113,7 +104,6 @@ def main():
                     "liability_clause": data.get("liability_clause", "")
                 }
                 results.append(row)
-            # Sleep briefly to avoid rate limits
             time.sleep(4)
 
     if results:
